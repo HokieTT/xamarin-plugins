@@ -42,7 +42,8 @@ namespace DeviceMotion.Plugin
 				{ MotionSensorType.Accelerometer, false},
 				{ MotionSensorType.Gyroscope, false},
 				{ MotionSensorType.Magnetometer, false},
-                { MotionSensorType.Compass, false}
+                { MotionSensorType.Compass, false},
+				{ MotionSensorType.DeviceMotion, false}
 			};
         }
 
@@ -107,6 +108,17 @@ namespace DeviceMotion.Plugin
                         Debug.WriteLine("Compass not available");
                     }
                     break;
+				case MotionSensorType.DeviceMotion:
+					if (motionManager.DeviceMotionAvailable)
+					{
+						motionManager.DeviceMotionUpdateInterval = (double)interval / ms;
+						motionManager.StartDeviceMotionUpdates(NSOperationQueue.CurrentQueue, OnDeviceMotionChanged);
+					}
+					else
+					{
+						Debug.WriteLine("DeviceMotion processing not available");
+					}
+					break;
             }
             sensorStatus[sensorType] = true;
         }
@@ -164,6 +176,22 @@ namespace DeviceMotion.Plugin
 
         }
 
+
+		/// <summary>
+		/// Raises the accelerometer changed event.
+		/// </summary>
+		/// <param name="data">Data.</param>
+		/// <param name="error">Error.</param>
+		private void OnDeviceMotionChanged(CMDeviceMotion data, NSError error)
+		{
+			if (SensorValueChanged == null)
+				return;
+
+			SensorValueChanged(this, new SensorValueChangedEventArgs { ValueType = MotionSensorValueType.Attitude, SensorType = MotionSensorType.DeviceMotion, Value = new MotionAttitude() { Pitch = data.Attitude.Pitch, Yaw = data.Attitude.Yaw, Roll = data.Attitude.Roll } });
+
+		}
+
+
         /// <summary>
         /// Stop the specified sensorType.
         /// </summary>
@@ -201,7 +229,13 @@ namespace DeviceMotion.Plugin
                         Debug.WriteLine("Compass not available");
                     }
                     break;
-            }
+				case MotionSensorType.DeviceMotion:
+					if (motionManager.DeviceMotionActive)
+						motionManager.StopDeviceMotionUpdates();
+					else
+						Debug.WriteLine("DeviceMotion processing not available");
+					break;
+			}
             sensorStatus[sensorType] = false;
         }
 

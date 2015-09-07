@@ -22,7 +22,11 @@ namespace DeviceMotion.Plugin.Abstractions
         /// <summary>
         /// Compass Sensor
         /// </summary>
-        Compass
+        Compass,
+		/// <summary>
+		/// The American cheese of sensor readings
+		/// </summary>
+		DeviceMotion
 	}
 }
 
